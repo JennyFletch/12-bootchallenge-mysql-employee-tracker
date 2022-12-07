@@ -17,5 +17,10 @@
   "bugs": {
     "url": "https://github.com/JennyFletch/12-bootchallenge-mysql-employee-tracker/issues"
   },
-  "homepage": "https://github.com/JennyFletch/12-bootchallenge-mysql-employee-tracker#readme"
+  "homepage": "https://github.com/JennyFletch/12-bootchallenge-mysql-employee-tracker#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "inquirer": "^8.2.4",
+    "mysql2": "^2.3.3"
+  }
 }
