@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
+const queries = require('./helpers/queries');
 
 // Set a dynamic port
 const PORT = process.env.PORT || 3001;
@@ -21,63 +22,6 @@ const db = mysql.createConnection(
   console.log(`Connected to the staff_db database.`)
 );
 
-function viewAllDepartments() {
-
-    var sql = "SELECT id, name FROM departments";
-    db.query(sql, (err, rows) => {
-        if(err) {
-            console.log("error");
-            return;
-        } else { 
-            console.log("success"); 
-            console.table(rows);
-            showMainMenu();
-        }
-    });
-}
-
-function viewAllRoles() {
-
-    var sql = `SELECT roles.title as role, roles.salary, departments.name
-    FROM roles
-    LEFT OUTER JOIN departments
-    ON roles.department_id = departments.id
-    ORDER BY departments.name`;
-
-    db.query(sql, (err, rows) => {
-        if(err) {
-            console.log("error");
-            return;
-        } else { 
-            console.log("success"); 
-            console.table(rows);
-            showMainMenu();
-        }
-    });
-}
-
-function viewAllEmployees() {
-
-    var sql = `SELECT employees.first_name, employees.last_name, roles.title, departments.name, roles.salary
-    FROM roles
-    JOIN employees
-    ON employees.role_id = roles.id
-    JOIN departments 
-    ON roles.department_id = departments.id
-    ORDER BY employees.last_name`;
-
-    db.query(sql, (err, rows) => {
-        if(err) {
-            console.log("error");
-            return;
-        } else { 
-            console.log("success"); 
-            console.table(rows);
-            showMainMenu();
-        }
-    });
-}
-
 function showMainMenu() {
     inquirer.prompt([
         {
@@ -88,6 +32,7 @@ function showMainMenu() {
         }
     ]).then(function(answers) {
         console.log(answers);
+        var sql = '';
 
         switch (answers.userGoal) {
                 case 'Quit':
@@ -95,52 +40,37 @@ function showMainMenu() {
                     process.exit();
                     break;
                 case 'View all departments':
-                    viewAllDepartments();
+                    sql = queries.viewAllDepartments();
                     break;
                 case 'View all roles':
-                    viewAllRoles();
+                    sql = queries.viewAllRoles();
                     break;
                 case 'View all employees':
-                    viewAllEmployees();
+                    sql = queries.viewAllEmployees();
+                    break;
+                case 'Update an employee role':
+                    // get user input
+                    // update the database
+                    // display user info now updated
                     break;
                 default:
                     console.log('Error - nothing selected.');
                     break;
         }
         
-
-           
-            // view all roles
-            // view all employees
-            // update an employee role
+        db.query(sql, (err, rows) => {
+            if(err) {
+                console.log("error");
+                return;
+            } else { 
+                console.log("success"); 
+                console.table(rows);
+                showMainMenu();
+            }
+        });
     });
     
 }
-
-app.get('/api/employees', (req, res) => {
-    const sql = `SELECT * FROM employees;`
-
-    db.query(sql, (err, rows) => {
-        if(err) {
-            res.status(500).json({ err: err.message});
-            return;
-        }
-        res.json({
-            message: 'success',
-            data: rows
-        });
-    });
-});
-
-/* // Count all the books in stock and display them in a column titled total_count
-db.query('SELECT COUNT(id) AS total_count FROM favorite_books GROUP BY in_stock', function (err, results) {
-  console.log(results);
-});
-
-// Find the min, max, and average number of books by section and label them accordingly 
-db.query('SELECT SUM(quantity) AS total_in_section, MAX(quantity) AS max_quantity, MIN(quantity) AS min_quantity, AVG(quantity) AS avg_quantity FROM favorite_books GROUP BY section', function (err, results) {
-  console.log(results);
-}); */
 
 // Run Express
 app.use((req, res) => {
