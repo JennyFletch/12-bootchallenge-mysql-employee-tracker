@@ -16,7 +16,7 @@ function viewAllRoles() {
 
 function viewAllEmployees() {
 
-    var sql = `SELECT employees.first_name, employees.last_name, roles.title, departments.name, roles.salary
+    var sql = `SELECT employees.first_name, employees.last_name, roles.title, departments.name, roles.salary, manager_id AS manager
     FROM roles
     JOIN employees
     ON employees.role_id = roles.id

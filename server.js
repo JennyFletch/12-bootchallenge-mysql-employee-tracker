@@ -1,7 +1,8 @@
 const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
-const queries = require('./helpers/queries');
+const queries = require('./helpers/queries-static');
+const userUpdates = require('./helpers/queries-dynamic');
 
 // Set a dynamic port
 const PORT = process.env.PORT || 3001;
@@ -22,18 +23,33 @@ const db = mysql.createConnection(
   console.log(`Connected to the staff_db database.`)
 );
 
+// Get user input
 function showMainMenu() {
     inquirer.prompt([
         {
             type: 'list',
             name: 'userGoal',
             message: 'What would you like to do?',
-            choices: ['View all departments', 'View all roles', 'View all employees', 'Update an employee role', "Quit"]
-        }
+            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', "Quit"]
+        },
+        {
+            type: 'input',
+            name: 'departmentName',
+            message: 'Name of the Department:',
+            when: (answers) => (answers.userGoal === 'Add a department'),
+            validate(value) {
+                if (value.length) { 
+                    return true 
+                }
+                return 'Please enter the name of the department.'
+            }
+        },
     ]).then(function(answers) {
-        console.log(answers);
-        var sql = '';
+        
+        var sql = 'not set';
+        var showTable = true;
 
+        // Query/update database according to user input
         switch (answers.userGoal) {
                 case 'Quit':
                     console.log('Goodbye.');
@@ -48,26 +64,31 @@ function showMainMenu() {
                 case 'View all employees':
                     sql = queries.viewAllEmployees();
                     break;
-                case 'Update an employee role':
-                    // get user input
-                    // update the database
-                    // display user info now updated
+                case 'Add a department':
+                    var newDept = answers.departmentName;
+                    sql = userUpdates.addDepartment(newDept);
+                    console.log(`Added ${ newDept } to the database.`);
+                    showTable = false;
                     break;
                 default:
                     console.log('Error - nothing selected.');
                     break;
         }
-        
-        db.query(sql, (err, rows) => {
-            if(err) {
-                console.log("error");
-                return;
-            } else { 
-                console.log("success"); 
-                console.table(rows);
-                showMainMenu();
-            }
-        });
+
+        if (sql === 'not set') {
+            showMainMenu();
+        } else {
+            db.query(sql, (err, rows) => {
+                if(err) {
+                    console.log("error");
+                    return;
+                } else { 
+                    // console.log("success"); 
+                    if (showTable) { console.table(rows); }
+                    showMainMenu();
+                }
+            });
+        }
     });
     
 }
