@@ -16,13 +16,15 @@ function viewAllRoles() {
 
 function viewAllEmployees() {
 
-    var sql = `SELECT employees.first_name, employees.last_name, roles.title, departments.name, roles.salary, manager_id AS manager
-    FROM roles
-    JOIN employees
-    ON employees.role_id = roles.id
+    var sql = `SELECT A.first_name, A.last_name, roles.title, departments.name, roles.salary, CONCAT(B.first_name, " ", B.last_name) AS manager 
+    FROM employees A
+    JOIN roles
+    ON A.role_id = roles.id
     JOIN departments 
     ON roles.department_id = departments.id
-    ORDER BY employees.last_name`;
+    LEFT JOIN employees B
+    ON A.manager_id = B.id
+    ORDER BY A.last_name`;
     return sql;
 }
 
