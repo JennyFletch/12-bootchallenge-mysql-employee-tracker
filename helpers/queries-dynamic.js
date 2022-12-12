@@ -6,4 +6,12 @@ function addDepartment(deptName) {
     return sql;
 }
 
-module.exports = { addDepartment }
+function addRole(newRole, salary, dept) {
+    var salaryAmount = Number(salary);
+    var deptNumber = Number(dept);
+    console.log(`received: ${ newRole }, ${ salary }, ${ deptNumber }`);
+    var sql = `INSERT INTO roles (title, salary, department_id) VALUES ('${ newRole }', ${ salaryAmount }, ${ deptNumber })`;
+    return sql;
+}
+
+module.exports = { addDepartment, addRole }
