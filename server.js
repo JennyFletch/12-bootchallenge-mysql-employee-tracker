@@ -3,9 +3,6 @@ const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const queries = require('./helpers/queries-static');
 const userUpdates = require('./helpers/queries-dynamic');
-//let deptListOld = [ {name: "pear", value: "0" }, { name: "apple", value: "2"}, { name: "banana", value: "3" } ];
-
-
 
 // Set a dynamic port
 const PORT = process.env.PORT || 3000;
@@ -26,51 +23,116 @@ const db = mysql.createConnection(
   console.log(`Connected to the staff_db database.`)
 );
 
-
-function showMainMenu() {
-
-    //var deptString = await getDepartmentChoices();
-    //console.table(deptString);
+async function getDepartmentChoices() {
 
     let newDeptList = [];
+    return new Promise((resolve) => {
 
-    //return new Promise((resolve) => {
-
-
-        var currentsql = "SELECT name AS name, id AS value FROM departments";
-
-        db.query(currentsql, (err, rows) => {
+        var sql = "SELECT name AS name, id AS value FROM departments";
+        db.query(sql, (err, rows) => {
 
             if(err) {
                 console.log("error");
                 return;
             }  else {
                 //console.table(rows);
-                var rolesCount = 0;
-                //for (const [value, name] of Object.entries(rows[rolesCount])) {
+                var rowsCount = 0;
                 for (const [key, value] in rows) {
 
                     var newDept = {
-                        name: rows[rolesCount].name,
-                        value: rows[rolesCount].value
-                        //name: rows[key],
-                        //value: rows[value]
+                        name: rows[rowsCount].name,
+                        value: rows[rowsCount].value
                     }
-
-                    rolesCount++;
+                    rowsCount++;
                     newDeptList.push(newDept);
                 }
+            } 
+        });    
+        resolve(newDeptList);  
+    });
+}
 
-        //resolve(newDeptList);  
-    //});
+async function getRoleChoices() {
 
-    // Get user input
+    let newRoleList = [];
+    return new Promise((resolve) => {
+
+        var sql = "SELECT id, title FROM roles";
+        db.query(sql, (err, rows) => {
+
+            if(err) {
+                console.log("error");
+                return;
+            }  else {
+                // console.table(rows);
+                var rowsCount = 0;
+                for (const [key, value] in rows) {
+
+                    var newRole = {
+                        name: rows[rowsCount].title,
+                        value: rows[rowsCount].id
+                    }
+                    rowsCount++;
+                    newRoleList.push(newRole);
+                }
+            } 
+        });    
+        resolve(newRoleList);  
+    });
+}
+
+async function getManagerChoices() {
+
+    let empMgrList = [];
+    return new Promise((resolve) => {
+
+        var sql = `SELECT id, CONCAT(first_name, " ", last_name) AS managerName FROM employees`;
+
+        db.query(sql, (err, rows) => {
+
+            if(err) {
+                console.log("error");
+                return;
+            }  else {
+                // console.table(rows);
+                var rowsCount = 0;
+                for (const [key, value] in rows) {
+
+                    var newEmp = {
+                        name: rows[rowsCount].managerName,
+                        value: rows[rowsCount].id
+                    }
+                    rowsCount++;
+                    empMgrList.push(newEmp);
+                }
+                // add in a null-value for no manager
+                var nullValue = null;
+                var noMgr = {
+                    name: 'No Manager',
+                    value: nullValue
+                }
+                empMgrList.push(noMgr);
+            } 
+        });    
+        resolve(empMgrList);  
+    });
+}
+
+// Get user input
+async function showMainMenu() {
+
+    var deptString = await getDepartmentChoices();
+    var roleString = await getRoleChoices();
+    var empManagers = await getManagerChoices();
+    
+    //console.table(deptString);
+
     inquirer.prompt([
         {
             type: 'list',
             name: 'userGoal',
             message: 'What would you like to do?',
-            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', "Add a role", "Quit"]
+            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', "Add a role", "Add an employee", "Update employee role", "Quit"]
         },
         {
             type: 'input',
@@ -110,11 +172,49 @@ function showMainMenu() {
         },
         {
             type: 'list',
-            message: 'To which department does this role belong?',
+            message: 'Which department does this role belong to?',
             name: 'roleDept',
-            choices: newDeptList,
+            choices: deptString,
             when: (answers) => (answers.userGoal === 'Add a role')
-        }
+         },
+         {
+            type: 'input',
+            name: 'employeeFirst',
+            message: 'What is first name of the employee?',
+            when: (answers) => (answers.userGoal === 'Add an employee'),
+            validate(value) {
+                if (value.length) { 
+                    return true 
+                }
+                return 'Please enter the first name of the employee.'
+            }
+        },
+        {
+            type: 'input',
+            name: 'employeeLast',
+            message: 'What is last name of the employee?',
+            when: (answers) => (answers.userGoal === 'Add an employee'),
+            validate(value) {
+                if (value.length) { 
+                    return true 
+                }
+                return 'Please enter the last name of the employee.'
+            }
+        },
+        {
+            type: 'list',
+            message: 'What is the role for this employee?',
+            name: 'empRole',
+            choices: roleString,
+            when: (answers) => (answers.userGoal === 'Add an employee')
+         },
+         {
+             type: 'list',
+             message: 'Who will this employee report to?',
+             name: 'empManager',
+             choices: empManagers,
+             when: (answers) => (answers.userGoal === 'Add an employee')
+          }
     ]).then(function(answers) {
         
         var sql = 'not set';
@@ -146,7 +246,16 @@ function showMainMenu() {
                     var roleSalary = answers.roleSalary;
                     var roleDept = answers.roleDept;
                     sql = userUpdates.addRole(newRole, roleSalary, roleDept);
-                    console.log(`Added ${ newRole } ${ roleSalary } ${ roleDept } to the database. (not really)`);
+                    console.log(`Added ${ newRole } to the database.`);
+                    showTable = false;
+                    break;
+                case 'Add an employee':
+                    var newEmpFirst = answers.employeeFirst;
+                    var newEmpLast = answers.employeeLast;
+                    var newEmpRole = answers.empRole;
+                    var newEmpManager = answers.empManager;
+                    sql = userUpdates.addEmployee(newEmpFirst, newEmpLast, newEmpRole, newEmpManager);
+                    console.log(`Added ${ newEmpFirst } ${ newEmpLast } to the database.`);
                     showTable = false;
                     break;
                 default:
@@ -168,14 +277,8 @@ function showMainMenu() {
                 }
             });
         }
-    });
-} 
-            
-});    
+    }); 
 }
-
-/* async function getDepartmentChoices() {
-} */
 
 // Run Express
 app.use((req, res) => {
