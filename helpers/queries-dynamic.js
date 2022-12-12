@@ -27,4 +27,12 @@ function addEmployee(firstName, lastName, role, manager) {
     return sql;
 }
 
-module.exports = { addDepartment, addRole, addEmployee }
+function updateEmployee(empId, roleId) {
+   
+    var emp_id = Number(empId);
+    var role_id = Number(roleId);
+    var sql = `UPDATE employees SET role_id = ${ role_id } WHERE id = ${ emp_id }`;
+    return sql;
+}
+
+module.exports = { addDepartment, addRole, addEmployee, updateEmployee }

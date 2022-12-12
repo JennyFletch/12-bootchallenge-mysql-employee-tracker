@@ -214,6 +214,20 @@ async function showMainMenu() {
              name: 'empManager',
              choices: empManagers,
              when: (answers) => (answers.userGoal === 'Add an employee')
+          },
+          {
+            type: 'list',
+            message: 'Which employee would you like to update?',
+            name: 'empToUpdate',
+            choices: empManagers,
+            when: (answers) => (answers.userGoal === 'Update employee role')
+         },
+         {
+             type: 'list',
+             message: 'What is their new role?',
+             name: 'empRoleToUpdate',
+             choices: roleString,
+             when: (answers) => (answers.userGoal === 'Update employee role')
           }
     ]).then(function(answers) {
         
@@ -256,6 +270,13 @@ async function showMainMenu() {
                     var newEmpManager = answers.empManager;
                     sql = userUpdates.addEmployee(newEmpFirst, newEmpLast, newEmpRole, newEmpManager);
                     console.log(`Added ${ newEmpFirst } ${ newEmpLast } to the database.`);
+                    showTable = false;
+                    break;
+                case 'Update employee role':
+                    var empToUpdate = answers.empToUpdate;
+                    var empRoleToUpdate = answers.empRoleToUpdate;
+                    sql = userUpdates.updateEmployee(empToUpdate, empRoleToUpdate);
+                    console.log(`Updated user in database.`);
                     showTable = false;
                     break;
                 default:
