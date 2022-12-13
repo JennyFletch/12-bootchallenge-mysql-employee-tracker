@@ -1,12 +1,12 @@
 function viewAllDepartments() {
 
-    var sql = "SELECT id, name FROM departments";
+    var sql = "SELECT id, name AS department FROM departments";
     return sql;
 }
 
 function viewAllRoles() {
 
-    var sql = `SELECT roles.title as role, roles.salary, departments.name
+    var sql = `SELECT roles.title as role, roles.salary, departments.name AS department
     FROM roles
     LEFT OUTER JOIN departments
     ON roles.department_id = departments.id
@@ -16,7 +16,7 @@ function viewAllRoles() {
 
 function viewAllEmployees() {
 
-    var sql = `SELECT A.first_name, A.last_name, roles.title, departments.name, roles.salary, CONCAT(B.first_name, " ", B.last_name) AS manager 
+    var sql = `SELECT A.first_name, A.last_name, roles.title AS role, departments.name AS department, roles.salary, CONCAT(B.first_name, " ", B.last_name) AS manager 
     FROM employees A
     JOIN roles
     ON A.role_id = roles.id
