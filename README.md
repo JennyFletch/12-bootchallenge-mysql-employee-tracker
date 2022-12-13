@@ -13,7 +13,8 @@ A command-line application powered by Express and MySQL that manages an office t
 Express.js, MySQL2 and Inquirer are required to run this application.
 
 ## Usage
-  
+
+The deployed application can be run here: https://drive.google.com/file/d/1neHG5FjcAGA2K-ZxotYmTx-76EWU9RpD/view
 ![Alt text](./assets/images/screenshot.png?raw=true "Screenshot of the Team Manager application")
 
 ## Credits
