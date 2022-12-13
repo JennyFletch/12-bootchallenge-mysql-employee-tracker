@@ -14,7 +14,7 @@ Express.js, MySQL2 and Inquirer are required to run this application.
 
 ## Usage
   
-![Alt text](./public/assets/images/screenshot.png?raw=true "Screenshot of the Team Manager application")
+![Alt text](./assets/images/screenshot.png?raw=true "Screenshot of the Team Manager application")
 
 ## Credits
   
