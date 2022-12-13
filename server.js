@@ -37,7 +37,7 @@ async function getDepartmentChoices() {
             }  else {
                 //console.table(rows);
                 var rowsCount = 0;
-                for (const [key, value] in rows) {
+                for (const row in rows) {
 
                     var newDept = {
                         name: rows[rowsCount].name,
@@ -66,7 +66,7 @@ async function getRoleChoices() {
             }  else {
                 // console.table(rows);
                 var rowsCount = 0;
-                for (const [key, value] in rows) {
+                for (const row in rows) {
 
                     var newRole = {
                         name: rows[rowsCount].title,
@@ -96,7 +96,7 @@ async function getManagerChoices() {
             }  else {
                 // console.table(rows);
                 var rowsCount = 0;
-                for (const [key, value] in rows) {
+                for (const row in rows) {
 
                     var newEmp = {
                         name: rows[rowsCount].managerName,
